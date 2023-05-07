@@ -47,4 +47,16 @@ function makePageForEpisodes(episodeList) {
   console.log(footerElement);
 }
 
+let searchInputElement = document.querySelector("#searchBox");
+searchInputElement.addEventListener("keyup", test2);
+
+function test() {
+  console.log("All good!");
+}
+
+function test2() {
+  let text = searchInputElement.value;
+  console.log(text);
+}
+
 window.onload = setup;
