@@ -72,20 +72,29 @@ function test3() {
 
 function test4() {
   let filteredArr = document.querySelectorAll(".episodeCard");
+  let episodeCounterDisplay = document.querySelector("#episodeCounterDisplay");
+  episodeCounterDisplay.clear;
+  console.log(episodeCounterDisplay);
+  let hiddenEpisodeCounter = 0;
   filteredArr.forEach((element) => {
     if (element.classList.contains("hidden")) {
       element.classList.remove("hidden");
     }
-    console.clear();
     let searchText = searchInputElement.value.toLowerCase();
     let summary = element.querySelector(".summary");
     let title = element.querySelector(".title");
-    if (title.textContent.toLocaleLowerCase().includes(searchText) === false) {
-      if (
-        summary.textContent.toLocaleLowerCase().includes(searchText) === false
-      ) {
+    if (title.textContent.toLowerCase().includes(searchText) === false) {
+      if (summary.textContent.toLowerCase().includes(searchText) === false) {
         element.classList.add("hidden");
+        hiddenEpisodeCounter++;
       }
+    }
+    if (searchText.length === 0) {
+      episodeCounterDisplay.innerText = "";
+    } else {
+      episodeCounterDisplay.innerText = `Matching result: ${
+        filteredArr.length - hiddenEpisodeCounter
+      }/${filteredArr.length}`;
     }
   });
 }
