@@ -2,6 +2,7 @@
 function setup() {
   const allEpisodes = getAllEpisodes();
   makePageForEpisodes(allEpisodes);
+  return (cacheAllEpisodes = allEpisodes);
 }
 
 function makePageForEpisodes(episodeList) {
@@ -23,11 +24,12 @@ function makePageForEpisodes(episodeList) {
     }
     let episodeTitleElement = document.createElement("h2");
     episodeTitleElement.innerText = `${episode.name} - S${seasonVar}E${episodeVar}`;
+    episodeTitleElement.classList.add("title");
     episodeTitleElement.classList.add("border");
     let episodeImgElement = document.createElement("img");
     episodeImgElement.src = episode.image.medium;
     let episodeSummaryElement = document.createElement("p");
-    episodeSummaryElement.classList.add("margin");
+    episodeSummaryElement.classList.add("margin", "summary");
     episodeSummaryElement.innerText = episode.summary
       .replaceAll("<p>", "")
       .replaceAll("</p>", "")
@@ -48,15 +50,44 @@ function makePageForEpisodes(episodeList) {
 }
 
 let searchInputElement = document.querySelector("#searchBox");
-searchInputElement.addEventListener("keyup", test2);
+searchInputElement.addEventListener("input", test4);
 
 function test() {
-  console.log("All good!");
+  alert("All good!");
 }
 
 function test2() {
-  let text = searchInputElement.value;
-  console.log(text);
+  let searchText = searchInputElement.value;
+  console.log(searchText);
+}
+
+function test3() {
+  cacheAllEpisodes.forEach((episode) => {
+    let searchText = searchInputElement.value.toLowerCase();
+    if (episode.name.toLowerCase().includes(searchText)) {
+      console.log(episode.name);
+    }
+  });
+}
+
+function test4() {
+  let filteredArr = document.querySelectorAll(".episodeCard");
+  filteredArr.forEach((element) => {
+    if (element.classList.contains("hidden")) {
+      element.classList.remove("hidden");
+    }
+    console.clear();
+    let searchText = searchInputElement.value.toLowerCase();
+    let summary = element.querySelector(".summary");
+    let title = element.querySelector(".title");
+    if (title.textContent.toLocaleLowerCase().includes(searchText) === false) {
+      if (
+        summary.textContent.toLocaleLowerCase().includes(searchText) === false
+      ) {
+        element.classList.add("hidden");
+      }
+    }
+  });
 }
 
 window.onload = setup;
