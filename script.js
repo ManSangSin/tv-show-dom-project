@@ -22,6 +22,7 @@ function makePageForEpisodes(episodeList) {
     if (seasonVar < 10) {
       seasonVar = `0${episode.season}`;
     }
+    episodeContainer.id = `S${seasonVar}E${episodeVar}`;
     let episodeTitleElement = document.createElement("h2");
     episodeTitleElement.innerText = `${episode.name} - S${seasonVar}E${episodeVar}`;
     episodeTitleElement.classList.add("title");
@@ -40,6 +41,11 @@ function makePageForEpisodes(episodeList) {
       episodeSummaryElement
     );
     allEpisodesContainerElement.append(episodeContainer);
+    let createNewDropdownOption = document.createElement("option");
+    let episodeDropdownElement = document.querySelector("#episodeDropdownList");
+    createNewDropdownOption.innerText = `S${seasonVar}E${episodeVar}: ${episode.name}`;
+    createNewDropdownOption.value = `S${seasonVar}E${episodeVar}`;
+    episodeDropdownElement.append(createNewDropdownOption);
   });
   let copyrightElement = document.createElement("p");
   copyrightElement.innerText = "Data came from TVMaze.com";
@@ -48,6 +54,11 @@ function makePageForEpisodes(episodeList) {
   console.log(episodeList);
   console.log(footerElement);
 }
+
+let episodeDropdownElement = document.querySelector("#episodeDropdownList");
+episodeDropdownElement.addEventListener("change", function () {
+  window.location = `#${episodeDropdownElement.value}`;
+});
 
 let searchInputElement = document.querySelector("#searchBox");
 searchInputElement.addEventListener("input", test4);
@@ -89,6 +100,7 @@ function test4() {
         hiddenEpisodeCounter++;
       }
     }
+
     if (searchText.length === 0) {
       episodeCounterDisplay.innerText = "";
     } else {
@@ -98,5 +110,7 @@ function test4() {
     }
   });
 }
+
+function test5() {}
 
 window.onload = setup;
