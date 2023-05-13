@@ -118,6 +118,4 @@ function test4() {
   });
 }
 
-function test5() {}
-
 window.onload = setup;
