@@ -4,12 +4,24 @@ async function setup() {
   // const allEpisodes = getAllEpisodes();
   const allEpisodes = await fetchMovies();
   makePageForEpisodes(allEpisodes);
+  makeShowDropdown();
   return (cacheAllEpisodes = allEpisodes);
 }
 
 async function fetchMovies() {
   const response = await fetch("https://api.tvmaze.com/shows/82/episodes");
   return response.json();
+}
+
+function makeShowDropdown() {
+  const showList = getAllShows();
+  const dropdownElement = document.querySelector("#showDropdownList");
+  showList.forEach((show) => {
+    let newOptionElement = document.createElement("option");
+    newOptionElement.innerText = show.name;
+    newOptionElement.value = show.id;
+    dropdownElement.append(newOptionElement);
+  });
 }
 
 function makePageForEpisodes(episodeList) {
