@@ -1,8 +1,15 @@
 //You can edit ALL of the code here
-function setup() {
-  const allEpisodes = getAllEpisodes();
+// function becomes async as we need to wait for data before building the episode cards
+async function setup() {
+  // const allEpisodes = getAllEpisodes();
+  const allEpisodes = await fetchMovies();
   makePageForEpisodes(allEpisodes);
   return (cacheAllEpisodes = allEpisodes);
+}
+
+async function fetchMovies() {
+  const response = await fetch("https://api.tvmaze.com/shows/82/episodes");
+  return response.json();
 }
 
 function makePageForEpisodes(episodeList) {
