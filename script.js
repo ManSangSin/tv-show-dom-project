@@ -61,7 +61,7 @@ function makePageForEpisodes(episodeList) {
   console.log(episodeList);
   console.log(footerElement);
 }
-
+//create a dropdown option element and append to dropdown option element
 let episodeDropdownElement = document.querySelector("#episodeDropdownList");
 episodeDropdownElement.addEventListener("change", function () {
   window.location = `#${episodeDropdownElement.value}`;

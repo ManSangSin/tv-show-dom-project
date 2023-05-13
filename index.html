@@ -10,10 +10,10 @@
 
   <body>
     <div id="root"></div>
+    <label for="showDropdownList">Select show: </label>
+    <select id="showDropdownList" name="showDropdownList"></select>
     <label for="episodeDropdownList">Select episode: </label>
-    <select id="episodeDropdownList" name="episodeDropdownList">
-      <option></option>
-    </select>
+    <select id="episodeDropdownList" name="episodeDropdownList"></select>
     <label for="searchBox">Search: </label>
     <input type="text" id="searchBox" name="searchBox" />
     <p id="episodeCounterDisplay"></p>
@@ -21,7 +21,7 @@
     <footer id="footer"></footer>
     <!-- Loads a provided function called getAllEpisodes() which returns all episodes -->
     <script src="episodes.js"></script>
-
+    <script src="shows.js"></script>
     <!-- Loads YOUR javascript code -->
     <script src="script.js"></script>
   </body>
