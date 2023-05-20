@@ -2,19 +2,28 @@
 // function becomes async as we need to wait for data before building the episode cards
 async function setup() {
   // const allEpisodes = getAllEpisodes();
-  const allEpisodes = await fetchMovies();
+  let input = "https://api.tvmaze.com/shows/82/episodes";
+  const allEpisodes = await fetchMovies(input);
   makePageForEpisodes(allEpisodes);
   makeShowDropdown();
-  return (cacheAllEpisodes = allEpisodes);
 }
 
-async function fetchMovies() {
-  const response = await fetch("https://api.tvmaze.com/shows/82/episodes");
+async function rebuildPage(input) {
+  document.querySelector("#allEpisodesContainer").innerHTML = "";
+  document.querySelector("#episodeDropdownList").innerHTML = "";
+  const allEpisodes = await fetchMovies(input);
+  makePageForEpisodes(allEpisodes);
+  makeShowDropdown();
+}
+
+async function fetchMovies(showURL) {
+  const response = await fetch(showURL);
   return response.json();
 }
 
 function makeShowDropdown() {
   const showList = getAllShows();
+  showList.sort((a, b) => (a.name > b.name ? 1 : -1));
   const dropdownElement = document.querySelector("#showDropdownList");
   showList.forEach((show) => {
     let newOptionElement = document.createElement("option");
@@ -23,6 +32,17 @@ function makeShowDropdown() {
     dropdownElement.append(newOptionElement);
   });
 }
+
+function reorderDropdownList() {
+  document.querySelector("");
+}
+
+const showDropdownSelect = document.querySelector("#showDropdownList");
+showDropdownSelect.addEventListener("change", function () {
+  let showID = showDropdownSelect.value;
+  let apiURL = `https://api.tvmaze.com/shows/${showID}/episodes`;
+  rebuildPage(apiURL);
+});
 
 function makePageForEpisodes(episodeList) {
   const rootElem = document.getElementById("root");
@@ -50,10 +70,7 @@ function makePageForEpisodes(episodeList) {
     episodeImgElement.src = episode.image.medium;
     let episodeSummaryElement = document.createElement("p");
     episodeSummaryElement.classList.add("margin", "summary");
-    episodeSummaryElement.innerText = episode.summary
-      .replaceAll("<p>", "")
-      .replaceAll("</p>", "")
-      .replaceAll("<br>", "");
+    episodeSummaryElement.innerHTML = episode.summary;
     episodeContainer.append(
       episodeTitleElement,
       episodeImgElement,
