@@ -2,7 +2,7 @@
   color: red;
 }
 
-#allEpisodesContainer {
+.allEpisodesContainer {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
@@ -32,4 +32,8 @@
 
 .hidden {
   display: none;
+}
+
+.flex {
+  display: flex;
 }

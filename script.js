@@ -1,31 +1,29 @@
 //You can edit ALL of the code here
 // function becomes async as we need to wait for data before building the episode cards
-async function setup() {
-  // const allEpisodes = getAllEpisodes();
-  let input = "https://api.tvmaze.com/shows/82/episodes";
-  const allEpisodes = await fetchMovies(input);
-  makePageForEpisodes(allEpisodes);
-  makeShowDropdown();
+const listOfShows = getAllShows();
+const rootElem = document.getElementById("root");
+//500 setup
+async function setup500() {
+  rootElem.innerHTML = "";
+  buildShowDropdown(listOfShows);
+  buildSearchInput();
+  buildSearchCounter();
+  buildPageForShows(listOfShows);
+  buildFooter();
+  showDropdownAction();
+  searchInputAction();
 }
 
-async function rebuildPage(input) {
-  document.querySelector("#allEpisodesContainer").innerHTML = "";
-  document.querySelector("#episodeDropdownList").innerHTML = "";
-  const allEpisodes = await fetchMovies(input);
-  makePageForEpisodes(allEpisodes);
-  makeShowDropdown();
+function sortList(unorderedList) {
+  return unorderedList.sort((a, b) => (a.name > b.name ? 1 : -1));
 }
 
-async function fetchMovies(showURL) {
-  const response = await fetch(showURL);
-  return response.json();
-}
-
-function makeShowDropdown() {
-  const showList = getAllShows();
-  showList.sort((a, b) => (a.name > b.name ? 1 : -1));
-  const dropdownElement = document.querySelector("#showDropdownList");
-  showList.forEach((show) => {
+function buildShowDropdown(showList) {
+  let showListSorted = sortList(showList);
+  let dropdownElement = document.createElement("select");
+  dropdownElement.id = "showDropdownList";
+  rootElem.append(dropdownElement);
+  showListSorted.forEach((show) => {
     let newOptionElement = document.createElement("option");
     newOptionElement.innerText = show.name;
     newOptionElement.value = show.id;
@@ -33,26 +31,92 @@ function makeShowDropdown() {
   });
 }
 
-function reorderDropdownList() {
-  document.querySelector("");
+function buildSearchInput() {
+  let searchBoxElement = document.createElement("input");
+  searchBoxElement.type = "text";
+  searchBoxElement.id = "searchBox";
+  rootElem.appendChild(searchBoxElement);
 }
 
-const showDropdownSelect = document.querySelector("#showDropdownList");
-showDropdownSelect.addEventListener("change", function () {
-  let showID = showDropdownSelect.value;
-  let apiURL = `https://api.tvmaze.com/shows/${showID}/episodes`;
-  rebuildPage(apiURL);
-});
+function buildPageForShows(showList) {
+  showList.forEach((show) => {
+    let showContainer = document.createElement("div");
+    showContainer.classList.add("showCard", "searchClass");
+    let showTitleElement = document.createElement("h2");
+    showTitleElement.innerText = `${show.name}`;
+    showTitleElement.classList.add("title", "border");
+    let showInfoContainer = document.createElement("div");
+    let showImgElement = document.createElement("img");
+    if (show.image) {
+      showImgElement.src = show.image.medium;
+    } else {
+      console.log(`${show.name} input is falsy`);
+    }
+    let showSummaryElement = document.createElement("p");
+    showSummaryElement.classList.add("margin", "summary");
+    showSummaryElement.innerHTML = show.summary;
+    //rating, genres, status, runtime
+    showExtraInfoContainer = document.createElement("div");
+    showRatingElement = document.createElement("p");
+    showRatingElement.innerText = `Rated: ${show.rating.average}`;
+    showGenreElement = document.createElement("p");
+    showGenreElement.innerText = `Genres: ${show.genres}`;
+    showStatusElement = document.createElement("p");
+    showStatusElement.innerText = `Status: ${show.status}`;
+    showRuntimeElement = document.createElement("p");
+    showRuntimeElement.innerText = `Runtime: ${show.runtime}`;
+    showExtraInfoContainer.append(
+      showRatingElement,
+      showGenreElement,
+      showStatusElement,
+      showRuntimeElement
+    );
+    showInfoContainer.append(
+      showImgElement,
+      showSummaryElement,
+      showExtraInfoContainer
+    );
+    showInfoContainer.classList.add("flex");
+    showContainer.append(showTitleElement, showInfoContainer);
+    rootElem.append(showContainer);
+  });
+}
 
-function makePageForEpisodes(episodeList) {
-  const rootElem = document.getElementById("root");
-  // rootElem.textContent = `Got ${episodeList.length} episode(s)`;
-  let allEpisodesContainerElement = document.querySelector(
-    "#allEpisodesContainer"
-  );
+function showDropdownAction() {
+  const showDropdownSelect = document.querySelector("#showDropdownList");
+  showDropdownSelect.addEventListener("change", function () {
+    let showID = showDropdownSelect.value;
+    let apiURL = `https://api.tvmaze.com/shows/${showID}/episodes`;
+    rebuildPage(apiURL);
+  });
+}
+
+async function rebuildPage(selectedShowURL) {
+  rootElem.innerHTML = "";
+  buildShowDropdown(listOfShows);
+  buildSearchInput();
+  buildSearchCounter();
+  buildResetButton();
+  const allEpisodes = await fetchShowObject(selectedShowURL);
+  buildPageForEpisodes(allEpisodes);
+  showDropdownAction();
+  searchInputAction();
+  resetButtonAction();
+  buildFooter();
+}
+
+async function fetchShowObject(showURL) {
+  const response = await fetch(showURL);
+  return response.json();
+}
+
+function buildPageForEpisodes(episodeList) {
+  let allEpisodesContainerElement = document.createElement("div");
+  allEpisodesContainerElement.id = "allEpisodesContainer";
+  allEpisodesContainerElement.classList.add("allEpisodesContainer");
   episodeList.forEach((episode) => {
     let episodeContainer = document.createElement("div");
-    episodeContainer.classList.add("episodeCard");
+    episodeContainer.classList.add("episodeCard", "searchClass");
     let episodeVar = episode.number;
     if (episodeVar < 10) {
       episodeVar = `0${episode.number}`;
@@ -64,10 +128,11 @@ function makePageForEpisodes(episodeList) {
     episodeContainer.id = `S${seasonVar}E${episodeVar}`;
     let episodeTitleElement = document.createElement("h2");
     episodeTitleElement.innerText = `${episode.name} - S${seasonVar}E${episodeVar}`;
-    episodeTitleElement.classList.add("title");
-    episodeTitleElement.classList.add("border");
+    episodeTitleElement.classList.add("title", "border");
     let episodeImgElement = document.createElement("img");
-    episodeImgElement.src = episode.image.medium;
+    if (episode.image) {
+      episodeImgElement.src = episode.image.medium;
+    }
     let episodeSummaryElement = document.createElement("p");
     episodeSummaryElement.classList.add("margin", "summary");
     episodeSummaryElement.innerHTML = episode.summary;
@@ -77,51 +142,56 @@ function makePageForEpisodes(episodeList) {
       episodeSummaryElement
     );
     allEpisodesContainerElement.append(episodeContainer);
+  });
+  rootElem.appendChild(allEpisodesContainerElement);
+}
+
+function buildFooter() {
+  let copyrightElement = document.createElement("p");
+  copyrightElement.innerText = "Data came from TVMaze.com";
+  rootElem.appendChild(copyrightElement);
+}
+
+function buildEpisodeDropdown(episodeList) {
+  episodeList.forEach((episode) => {
     let createNewDropdownOption = document.createElement("option");
     let episodeDropdownElement = document.querySelector("#episodeDropdownList");
     createNewDropdownOption.innerText = `S${seasonVar}E${episodeVar}: ${episode.name}`;
     createNewDropdownOption.value = `S${seasonVar}E${episodeVar}`;
     episodeDropdownElement.append(createNewDropdownOption);
   });
-  let copyrightElement = document.createElement("p");
-  copyrightElement.innerText = "Data came from TVMaze.com";
-  footerElement = document.querySelector("footer");
-  footerElement.append(copyrightElement);
-  console.log(episodeList);
-  console.log(footerElement);
-}
-//create a dropdown option element and append to dropdown option element
-let episodeDropdownElement = document.querySelector("#episodeDropdownList");
-episodeDropdownElement.addEventListener("change", function () {
-  window.location = `#${episodeDropdownElement.value}`;
-});
-
-let searchInputElement = document.querySelector("#searchBox");
-searchInputElement.addEventListener("input", test4);
-
-function test() {
-  alert("All good!");
 }
 
-function test2() {
-  let searchText = searchInputElement.value;
-  console.log(searchText);
+function buildResetButton() {
+  let resetButtonElement = document.createElement("input");
+  resetButtonElement.id = "resetButton";
+  resetButtonElement.type = "button";
+  resetButtonElement.value = "Return to Show List";
+  rootElem.appendChild(resetButtonElement);
 }
 
-function test3() {
-  cacheAllEpisodes.forEach((episode) => {
-    let searchText = searchInputElement.value.toLowerCase();
-    if (episode.name.toLowerCase().includes(searchText)) {
-      console.log(episode.name);
-    }
+function resetButtonAction() {
+  let resetButtonElement = document.getElementById("resetButton");
+  resetButtonElement.addEventListener("click", setup500);
+}
+
+function episodeDropdownAction() {
+  //create a dropdown option element and append to dropdown option element
+  let episodeDropdownElement = document.createElement("select");
+  episodeDropdownElement.id = "episodeDropdownList";
+  episodeDropdownElement.addEventListener("change", function () {
+    window.location = `#${episodeDropdownElement.value}`;
   });
 }
 
-function test4() {
-  let filteredArr = document.querySelectorAll(".episodeCard");
-  let episodeCounterDisplay = document.querySelector("#episodeCounterDisplay");
-  episodeCounterDisplay.clear;
-  console.log(episodeCounterDisplay);
+function searchInputAction() {
+  let searchInputElement = document.getElementById("searchBox");
+  searchInputElement.addEventListener("input", searchAsYouType);
+}
+
+function searchAsYouType() {
+  let searchInputElement = document.getElementById("searchBox");
+  let filteredArr = document.querySelectorAll(".searchClass");
   let hiddenEpisodeCounter = 0;
   filteredArr.forEach((element) => {
     if (element.classList.contains("hidden")) {
@@ -136,15 +206,27 @@ function test4() {
         hiddenEpisodeCounter++;
       }
     }
-
-    if (searchText.length === 0) {
-      episodeCounterDisplay.innerText = "";
-    } else {
-      episodeCounterDisplay.innerText = `Matching result: ${
-        filteredArr.length - hiddenEpisodeCounter
-      }/${filteredArr.length}`;
-    }
+    updateCounter(hiddenEpisodeCounter, searchText, filteredArr);
   });
 }
 
-window.onload = setup;
+function buildSearchCounter() {
+  let counterDisplayElement = document.createElement("p");
+  counterDisplayElement.id = "counterDisplay";
+  rootElem.appendChild(counterDisplayElement);
+}
+
+function updateCounter(hiddenCount, searchText, filteredArr) {
+  let counterDisplay = document.getElementById("counterDisplay");
+  counterDisplay.clear;
+  console.log(counterDisplay);
+  if (searchText.length === 0) {
+    counterDisplay.innerText = "";
+  } else {
+    counterDisplay.innerText = `Matching result: ${
+      filteredArr.length - hiddenCount
+    }/${filteredArr.length}`;
+  }
+}
+
+window.onload = setup500;
