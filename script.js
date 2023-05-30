@@ -14,6 +14,22 @@ async function setup500() {
   searchInputAction();
 }
 
+async function rebuildPage(selectedShowURL) {
+  rootElem.innerHTML = "";
+  buildShowDropdown(listOfShows);
+  buildSearchInput();
+  buildSearchCounter();
+  const allEpisodes = await fetchShowObject(selectedShowURL);
+  buildEpisodeDropdown(allEpisodes);
+  buildResetButton();
+  buildPageForEpisodes(allEpisodes);
+  showDropdownAction();
+  episodeDropdownAction();
+  searchInputAction();
+  resetButtonAction();
+  buildFooter();
+}
+
 function sortList(unorderedList) {
   return unorderedList.sort((a, b) => (a.name > b.name ? 1 : -1));
 }
@@ -61,6 +77,7 @@ function buildPageForShows(showList) {
     showRatingElement.innerText = `Rated: ${show.rating.average}`;
     showGenreElement = document.createElement("p");
     showGenreElement.innerText = `Genres: ${show.genres}`;
+    showGenreElement.classList.add("genre");
     showStatusElement = document.createElement("p");
     showStatusElement.innerText = `Status: ${show.status}`;
     showRuntimeElement = document.createElement("p");
@@ -78,8 +95,13 @@ function buildPageForShows(showList) {
     );
     showInfoContainer.classList.add("flex");
     showContainer.append(showTitleElement, showInfoContainer);
+    showContainer.addEventListener("click", test);
     rootElem.append(showContainer);
   });
+}
+
+function test() {
+  alert("Hi");
 }
 
 function showDropdownAction() {
@@ -91,23 +113,16 @@ function showDropdownAction() {
   });
 }
 
-async function rebuildPage(selectedShowURL) {
-  rootElem.innerHTML = "";
-  buildShowDropdown(listOfShows);
-  buildSearchInput();
-  buildSearchCounter();
-  buildResetButton();
-  const allEpisodes = await fetchShowObject(selectedShowURL);
-  buildPageForEpisodes(allEpisodes);
-  showDropdownAction();
-  searchInputAction();
-  resetButtonAction();
-  buildFooter();
-}
-
 async function fetchShowObject(showURL) {
   const response = await fetch(showURL);
   return response.json();
+}
+
+function getNumberDoubleDigit(number) {
+  if (number < 10) {
+    number = `0${number}`;
+  }
+  return number;
 }
 
 function buildPageForEpisodes(episodeList) {
@@ -117,14 +132,8 @@ function buildPageForEpisodes(episodeList) {
   episodeList.forEach((episode) => {
     let episodeContainer = document.createElement("div");
     episodeContainer.classList.add("episodeCard", "searchClass");
-    let episodeVar = episode.number;
-    if (episodeVar < 10) {
-      episodeVar = `0${episode.number}`;
-    }
-    let seasonVar = episode.season;
-    if (seasonVar < 10) {
-      seasonVar = `0${episode.season}`;
-    }
+    let seasonVar = getNumberDoubleDigit(episode.season);
+    let episodeVar = getNumberDoubleDigit(episode.number);
     episodeContainer.id = `S${seasonVar}E${episodeVar}`;
     let episodeTitleElement = document.createElement("h2");
     episodeTitleElement.innerText = `${episode.name} - S${seasonVar}E${episodeVar}`;
@@ -153,12 +162,16 @@ function buildFooter() {
 }
 
 function buildEpisodeDropdown(episodeList) {
+  let episodeDropdownElement = document.createElement("select");
+  episodeDropdownElement.id = "episodeDropdownList";
   episodeList.forEach((episode) => {
+    let seasonVar = getNumberDoubleDigit(episode.season);
+    let episodeVar = getNumberDoubleDigit(episode.number);
     let createNewDropdownOption = document.createElement("option");
-    let episodeDropdownElement = document.querySelector("#episodeDropdownList");
     createNewDropdownOption.innerText = `S${seasonVar}E${episodeVar}: ${episode.name}`;
     createNewDropdownOption.value = `S${seasonVar}E${episodeVar}`;
     episodeDropdownElement.append(createNewDropdownOption);
+    rootElem.append(episodeDropdownElement);
   });
 }
 
@@ -177,8 +190,7 @@ function resetButtonAction() {
 
 function episodeDropdownAction() {
   //create a dropdown option element and append to dropdown option element
-  let episodeDropdownElement = document.createElement("select");
-  episodeDropdownElement.id = "episodeDropdownList";
+  let episodeDropdownElement = document.getElementById("episodeDropdownList");
   episodeDropdownElement.addEventListener("change", function () {
     window.location = `#${episodeDropdownElement.value}`;
   });
@@ -200,10 +212,13 @@ function searchAsYouType() {
     let searchText = searchInputElement.value.toLowerCase();
     let summary = element.querySelector(".summary");
     let title = element.querySelector(".title");
+    let genre = element.querySelector(".genre");
     if (title.textContent.toLowerCase().includes(searchText) === false) {
       if (summary.textContent.toLowerCase().includes(searchText) === false) {
-        element.classList.add("hidden");
-        hiddenEpisodeCounter++;
+        if (genre.textContent.toLowerCase().includes(searchText) === false) {
+          element.classList.add("hidden");
+          hiddenEpisodeCounter++;
+        }
       }
     }
     updateCounter(hiddenEpisodeCounter, searchText, filteredArr);
